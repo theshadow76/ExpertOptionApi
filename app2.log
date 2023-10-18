@@ -1,0 +1,24 @@
+2023-10-18 14:29:31,214 [DEBUG] - Using selector: KqueueSelector
+2023-10-18 14:29:32,719 [DEBUG] - Websocket client connected.
+2023-10-18 14:29:32,722 [DEBUG] - Websocket connection closed.
+2023-10-18 14:29:32,730 [INFO] - Fetching profile
+2023-10-18 14:29:34,557 [DEBUG] - Websocket client connected.
+2023-10-18 14:29:34,558 [DEBUG] - Websocket connection closed.
+2023-10-18 14:31:10,362 [DEBUG] - Using selector: KqueueSelector
+2023-10-18 14:31:11,607 [DEBUG] - Websocket client connected.
+2023-10-18 14:31:11,609 [DEBUG] - Websocket connection closed.
+2023-10-18 14:31:11,609 [DEBUG] - Websocket connection closed. Args: (<expoptapi.api.backend.client.WebSocketClient object at 0x116a333d0>, <websocket._app.WebSocketApp object at 0x116a33890>)
+2023-10-18 14:31:11,616 [INFO] - Fetching profile
+2023-10-18 14:31:13,043 [DEBUG] - Websocket client connected.
+2023-10-18 14:31:13,045 [DEBUG] - Websocket connection closed.
+2023-10-18 14:31:13,045 [DEBUG] - Websocket connection closed. Args: (<expoptapi.api.backend.client.WebSocketClient object at 0x116a333d0>, <websocket._app.WebSocketApp object at 0x116a33890>)
+2023-10-18 14:37:57,081 [DEBUG] - Using selector: KqueueSelector
+2023-10-18 14:37:58,537 [DEBUG] - Websocket client connected. Args: (<websocket._app.WebSocketApp object at 0x10686f150>,)
+2023-10-18 14:37:58,537 [DEBUG] - Websocket client connected.
+2023-10-18 14:37:58,540 [DEBUG] - Websocket connection closed.
+2023-10-18 14:37:58,540 [DEBUG] - Websocket connection closed. Args: (<expoptapi.api.backend.client.WebSocketClient object at 0x10686ead0>, <websocket._app.WebSocketApp object at 0x10686f150>)
+2023-10-18 14:37:58,549 [INFO] - Fetching profile
+2023-10-18 14:37:59,873 [DEBUG] - Websocket client connected. Args: (<websocket._app.WebSocketApp object at 0x10686f150>,)
+2023-10-18 14:37:59,873 [DEBUG] - Websocket client connected.
+2023-10-18 14:37:59,874 [DEBUG] - Websocket connection closed.
+2023-10-18 14:37:59,874 [DEBUG] - Websocket connection closed. Args: (<expoptapi.api.backend.client.WebSocketClient object at 0x10686ead0>, <websocket._app.WebSocketApp object at 0x10686f150>)

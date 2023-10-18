@@ -1,8 +1,9 @@
-from expoptapi.api.backend.client import MainClient
+from expoptapi.api.backend.client import WebSocketClient
+from expoptapi.api.constants import REGION
 
 class ExpertProfile:
-    def __init__(self):
-        self.action = "setContext"
+    def __init__(self, token: str):
+        self.action = "profile"
         self.message_type = "call"
         self.amount = 25
         self.assetid = 240
@@ -10,18 +11,11 @@ class ExpertProfile:
         self.expiration_time = 1697554345
         self.is_demo = 1
         self.rateIndex = 1
-        self.ns = 180
+        self.ns = None
+        self.token = token
 
-    async def get(self, token):
-        data = f"""
-        {{
-            "action": "{self.action}",
-            "message": {{
-                "is_demo": {self.is_demo}
-            }},
-            "token": "{token}",
-            "ns": {self.ns}
-        }}
-        """
-        GetProfile = MainClient(server="wss://fr24g1eu.expertoption.com/ws/v34?app_os=mac&app_source=web&app_type=web&app_version=13.0.5&app_build_number=3850&app_brand=expertoption&app_device_info=", data=data)
-        return await GetProfile
+    async def get(self):
+        europe = REGION.EUROPE
+        data = {"action": "profile", "message": None, "ns": None, "v": 18,
+                                              "token": self.token}
+        client = WebSocketClient(api=self.api)
