@@ -8,6 +8,12 @@ import ssl
 import time
 import simplejson as json
 import pause
+import websocket
+import decimal
+import urllib
+
+
+import expoptapi.api.global_values as global_value
 
 class EoApi:
     def __init__(self, token: str, server_region):
@@ -33,16 +39,127 @@ class EoApi:
         return {"Profile": f"{profile}", "LatestMessage": latest_message}
 
     def connect(self):
-        # implementation similar to the ExpertOptionAPI class...
-        pass
+        global_value.check_websocket_if_connect = None
 
+        self.websocket_client = WebSocketClient(self, token=self.token)
+
+        self.websocket_thread = threading.Thread(target=self.websocket_client.wss.run_forever, kwargs={
+            'sslopt': {
+                "check_hostname": False,
+                "cert_reqs": ssl.CERT_NONE,
+                "ca_certs": "cacert.pem"
+            },
+            "ping_interval": 0,
+            'skip_utf8_validation': True,
+            "origin": "https://app.expertoption.com",
+            # "http_proxy_host": '127.0.0.1', "http_proxy_port": 8890
+        })
+
+        self.websocket_thread.daemon = True
+        self.websocket_thread.start()
+
+        while True:
+            try:
+                if global_value.check_websocket_if_connect == 0 or global_value.check_websocket_if_connect == -1:
+                    return False
+                elif global_value.check_websocket_if_connect == 1:
+                    break
+            except Exception:
+                pass
+            pass
+
+        # self.authorize(authorize=self.token)
+
+        # TODO support it
+        # self.multiple_action(actions=[
+        #     self.get_countries(json=True),
+        #     self.get_currency(json=True),
+        #     self.get_profile(json=True),
+        #     self.get_environment(json=True),
+        #     self.get_open_options(json=True),
+        #     self.get_user_group(json=True),
+        #     self.get_set_time_zone(json=True),
+        #     self.get_history_steps(json=True),
+        #     self.get_trade_history(json=True),
+        # ], ns="_common")
+
+        self.send_websocket_request(action="multipleAction",
+                                    msg={"token": self.token, "v": 18, "action": "multipleAction",
+                                         "message": {"token": self.token, "actions": [
+                                             {"action": "getCountries", "message": None, "ns": None, "v": 18,
+                                              "token": self.token},
+                                             {"action": "getCurrency", "message": None, "ns": None, "v": 18,
+                                              "token": self.token},
+                                             {"action": "profile", "message": None, "ns": None, "v": 18,
+                                              "token": self.token},
+                                             {"action": "environment", "message": None, "ns": None, "v": 18,
+                                              "token": self.token}, {"action": "assets",
+                                                                     "message": {"mode": ["vanilla", "binary"],
+                                                                                 "subscribeMode": ["vanilla"]},
+                                                                     "ns": None, "v": 18, "token": self.token},
+                                             {"action": "openOptions", "message": None, "ns": None, "v": 18,
+                                              "token": self.token},
+                                             {"action": "userGroup", "message": None, "ns": None, "v": 18,
+                                              "token": self.token},
+                                             {"action": "setTimeZone", "message": {"timeZone": 360}, "ns": None,
+                                              "v": 18, "token": self.token},
+                                             {"action": "historySteps", "message": None, "ns": None, "v": 18,
+                                              "token": self.token}, {"action": "tradeHistory",
+                                                                     "message": {"mode": ["binary", "vanilla"],
+                                                                                 "count": 100, "index_from": 0},
+                                                                     "ns": None, "v": 18, "token": self.token}]}},
+                                    ns="_common")
+
+        self.ping_thread = threading.Thread(target=self.auto_ping)
+        self.ping_thread.daemon = True
+        self.ping_thread.start()
+
+        start_t = time.time()
+        while self.profile.msg is None:
+            if time.time() - start_t >= 30:
+                logging.error('**error** profile late 30 sec')
+                return False
+
+            pause.seconds(0.01)
+
+        return True
     def auto_ping(self):
-        # implementation similar to the ExpertOptionAPI class...
-        pass
+        while True:
+            try:
+                self.ping()
+            except:
+                pass
+
+            pause.seconds(5)
 
     def send_websocket_request(self, action: str, msg, ns: str = None):
-        # implementation similar to the ExpertOptionAPI class...
-        pass
+        """Send websocket request to ExpertOption server.
+        :type action: str
+        :param ns: str
+        :param dict msg: The websocket request msg.
+        """
+        logger = logging.getLogger(__name__)
+
+        if ns is not None and not ns:
+            ns = self.request_id
+
+        msg['ns'] = ns
+
+        if ns:
+            # self.results[ns] = None
+            self.msg_by_ns[ns] = None
+            self.msg_by_action[action][ns] = None
+
+        def default(obj):
+            if isinstance(obj, decimal.Decimal):
+                return str(obj)
+            raise TypeError
+
+        data = json.dumps(msg, default=default)
+        logger.debug(data)
+
+        self.websocket.send(bytearray(urllib.parse.quote(data).encode('utf-8')), opcode=websocket.ABNF.OPCODE_BINARY)
+        return ns
 
     # Other methods similar to ExpertOptionAPI...
     def nested_dict(self, n, type):
