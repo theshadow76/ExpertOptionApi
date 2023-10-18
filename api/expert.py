@@ -9,7 +9,6 @@ import time
 import simplejson as json
 import pause
 
-
 class EoApi:
     def __init__(self, token: str, server_region):
         self.token = token
