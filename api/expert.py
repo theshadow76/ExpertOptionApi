@@ -12,6 +12,8 @@ import websocket
 import decimal
 import urllib
 
+from expoptapi.api.backend.ws.channels.ping import Ping
+
 
 import expoptapi.api.global_values as global_value
 
@@ -23,8 +25,9 @@ class EoApi:
         self.websocket_client = WebSocketClient(api=self, token=self.token)  # Composition
         self.logger = logging.getLogger(__name__)
 
+        self.logger.info("Initializing EoApi with token: %s, region: %s", token, server_region)
+
         self.websocket_thread = None
-        self.ping_thread = None
         self.profile = None
         self.message_callback = None
         self._request_id = 1
@@ -32,10 +35,17 @@ class EoApi:
         self.msg_by_ns = self.FixSizeOrderedDict(max=300)
         self.msg_by_action = self.nested_dict(1, lambda: self.FixSizeOrderedDict(max=300))
 
+        self.ping_thread = threading.Thread(target=self.auto_ping)  # Create a new thread for auto_ping
+        self.ping_thread.daemon = True  # Set the thread as a daemon so it will terminate when the main program terminates
+        self.ping_thread.start()  # Start the auto_ping thread
+
+        self.websocket_client.wss.run_forever()
+
     async def Profile(self):
         self.logger.info("Fetching profile")
         profile = self.profile
         latest_message = self.websocket_client.latest_message
+        self.logger.debug("Fetched profile: %s, Latest message: %s", profile, latest_message)
         return {"Profile": f"{profile}", "LatestMessage": latest_message}
 
     def connect(self):
@@ -58,16 +68,6 @@ class EoApi:
         self.websocket_thread.daemon = True
         self.websocket_thread.start()
 
-        while True:
-            try:
-                if global_value.check_websocket_if_connect == 0 or global_value.check_websocket_if_connect == -1:
-                    return False
-                elif global_value.check_websocket_if_connect == 1:
-                    break
-            except Exception:
-                pass
-            pass
-
         # self.authorize(authorize=self.token)
 
         # TODO support it
@@ -82,6 +82,18 @@ class EoApi:
         #     self.get_history_steps(json=True),
         #     self.get_trade_history(json=True),
         # ], ns="_common")
+
+        self.websocket_client.wss.keep_running = True
+
+        while True:
+            try:
+                if global_value.check_websocket_if_connect == 0 or global_value.check_websocket_if_connect == -1:
+                    return False
+                elif global_value.check_websocket_if_connect == 1:
+                    break
+            except Exception:
+                pass
+            pass
 
         self.send_websocket_request(action="multipleAction",
                                     msg={"token": self.token, "v": 18, "action": "multipleAction",
@@ -109,28 +121,44 @@ class EoApi:
                                                                                  "count": 100, "index_from": 0},
                                                                      "ns": None, "v": 18, "token": self.token}]}},
                                     ns="_common")
-
-        self.ping_thread = threading.Thread(target=self.auto_ping)
-        self.ping_thread.daemon = True
-        self.ping_thread.start()
-
         start_t = time.time()
-        while self.profile.msg is None:
-            if time.time() - start_t >= 30:
-                logging.error('**error** profile late 30 sec')
-                return False
-
-            pause.seconds(0.01)
-
+        self.logger.info("WebSocket connected")
         return True
     def auto_ping(self):
-        while True:
-            try:
-                self.ping()
-            except:
-                pass
+        self.logger.info("Starting auto ping thread")
 
-            pause.seconds(5)
+        while True:
+            pause.seconds(5)  # Assuming that you've imported 'pause'
+            try:
+                if self.websocket_client.wss.sock and self.websocket_client.wss.sock.connected:  # Check if socket is connected
+                    self.ping()
+                else:
+                    self.logger.warning("WebSocket is not connected. Attempting to reconnect.")
+                    # Attempt reconnection
+                    if self.connect():
+                        self.logger.info("Successfully reconnected.")
+                    else:
+                        self.logger.warning("Reconnection attempt failed.")
+                    try:
+                        self.ping()
+                        self.logger.info("Sent ping reuqests successfully!")
+                    except Exception as e:
+                        self.logger.error(f"A error ocured trying to send ping: {e}")
+            except Exception as e:  # Catch exceptions and log them
+                self.logger.error(f"An error occurred while sending ping or attempting to reconnect: {e}")
+                try:
+                    self.logger.warning("Trying again...")
+                    v1 = self.connect()
+                    if v1:
+                        self.logger.info("Conection completed!, sending ping...")
+                        self.ping()
+                    else:
+                        self.logger.error("Connection was not established")
+                except Exception as e:
+                    self.logger.error(f"A error ocured when trying again: {e}")
+
+            pause.seconds(5)  # Assuming that you've imported 'pause'
+
 
     def send_websocket_request(self, action: str, msg, ns: str = None):
         """Send websocket request to ExpertOption server.
@@ -138,7 +166,7 @@ class EoApi:
         :param ns: str
         :param dict msg: The websocket request msg.
         """
-        logger = logging.getLogger(__name__)
+        self.logger.debug("Sending WebSocket request: action=%s, ns=%s", action, ns)
 
         if ns is not None and not ns:
             ns = self.request_id
@@ -156,17 +184,25 @@ class EoApi:
             raise TypeError
 
         data = json.dumps(msg, default=default)
-        logger.debug(data)
+        self.logger.debug(data)
 
-        self.websocket.send(bytearray(urllib.parse.quote(data).encode('utf-8')), opcode=websocket.ABNF.OPCODE_BINARY)
+        self.websocket_client.wss.send(bytearray(urllib.parse.quote(data).encode('utf-8')), opcode=websocket.ABNF.OPCODE_BINARY)
         return ns
 
-    # Other methods similar to ExpertOptionAPI...
     def nested_dict(self, n, type):
         if n == 1:
             return defaultdict(type)
         else:
             return defaultdict(lambda: self.nested_dict(n - 1, type))
+    @property
+    def request_id(self):
+        self._request_id += 1
+        return str(self._request_id - 1)
+
+    @property
+    def ping(self):
+        self.logger.info("Sent a ping request")
+        return Ping(self).__call__
 
     class FixSizeOrderedDict(OrderedDict):
         def __init__(self, *args, max=0, **kwargs):
@@ -179,12 +215,6 @@ class EoApi:
                 if len(self) > self._max:
                     self.popitem(False)
 
-    @property
-    def request_id(self):
-        self._request_id += 1
-        return str(self._request_id - 1)
-
-    # ... (Add other methods and properties that you need)
 
 class _api:
     def __init__(self, token: str) -> None:

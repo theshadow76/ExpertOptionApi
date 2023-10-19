@@ -5,6 +5,7 @@ import websocket
 import expoptapi.api.global_values as global_value
 import pprint
 from functools import partial
+import pause
 
 class WebSocketClient:
     def __init__(self, api, token):
@@ -16,18 +17,17 @@ class WebSocketClient:
         self.logger = logging.getLogger(__name__)
         self.latest_message = None  # To store the latest message
         self.wss = websocket.WebSocketApp(
-            "wss://fr24g1eu.expertoption.com/ws/v34?app_os=mac&app_source=web&app_type=web&app_version=13.0.6&app_build_number=3977&app_brand=expertoption&app_device_info=",     on_message=partial(self.on_message, self),
+            "wss://fr24g1eu.expertoption.com/",     on_message=self.on_message,
     on_error=partial(self.on_error, self),
     on_close=partial(self.on_close, self),
     on_open=partial(self.on_open, self),
             # header=self.api.headers, cookie=self.api.cookie  # TODO test are they needed or not
         )
         self.token = token
-        self.wss.run_forever()
-    def on_message(self, message):
+    def on_message(self, message, *args, **kwargs):
         """Method to process websocket messages."""
-        self.logger.debug(f"Received message: {message}")
-        message = message.decode('utf-8')
+        message = message.decode("utf-8")
+        self.logger.info(f"Received message: {message}")
         self.latest_message = message  # Save the latest message
 
         message = json.loads(message)
@@ -36,6 +36,7 @@ class WebSocketClient:
     def handle_action(self, message):
         action = message.get('action')
         ns = message.get('ns')
+        self.logger.info(f"Action is: {action}")
 
         if action == "multipleAction":
             for sub_message in message['message']['actions']:
@@ -86,36 +87,84 @@ class WebSocketClient:
         logger.error(error)
         global_value.check_websocket_if_connect = -1
 
-    def on_open(self, wss, *args):  # pylint: disable=unused-argument
+    def on_open(self, wss, *args, **kwargs):  # pylint: disable=unused-argument
         """Method to process websocket open."""
         logger = logging.getLogger(__name__)
         logger.debug(f"Websocket client connected. Args: {args}")
         logger.debug("Websocket client connected.")
         global_value.check_websocket_if_connect = 1
 
-        data = {
-            "action": "multipleAction",
+        data2 = {
+            "action": "setContext",
             "message": {
-                "actions": [
-                    {"action": "userGroup", "ns": 1, "token": self.token},
-                    {"action": "profile", "ns": 2, "token": self.token},
-                    {"action": "assets", "message": {"mode": ["vanilla"], "subscribeMode": ["vanilla"]}, "ns": 3, "token": self.token},
-                    {"action": "getCurrency", "ns": 4, "token": self.token},
-                    {"action": "getCountries", "ns": 5, "token": self.token},
-                    {"action": "environment", "ns": 6, "token": self.token},
-                    {"action": "defaultSubscribeCandles", "message": {"modes": ["vanilla"], "timeframes": [0, 5]}, "ns": 7, "token": self.token},
-                    {"action": "setTimeZone", "message": {"timeZone": -180}, "ns": 8, "token": self.token},
-                    {"action": "getCandlesTimeframes", "ns": 9, "token": self.token},
-                ]
+                "is_demo": 1
             },
             "token": self.token,
-            "ns": 212  # Some namespace value, if applicable
+            "ns": 1
         }
-        self.wss.send(json.dumps(data))
 
-    def on_close(self, *args):  # pylint: disable=unused-argument
+
+        data = {
+            "action": "multipleAction",
+            "msg": {
+                "token": self.token,
+                "v": 18,
+                "action": "multipleAction",
+                "message": {
+                    "token": self.token,
+                    "actions": [
+                        {"action": "getCountries", "message": None, "ns": None, "v": 18, "token": self.token},
+                        {"action": "getCurrency", "message": None, "ns": None, "v": 18, "token": self.token},
+                        {"action": "profile", "message": None, "ns": None, "v": 18, "token": self.token},
+                        {"action": "environment", "message": None, "ns": None, "v": 18, "token": self.token},
+                        {
+                            "action": "assets",
+                            "message": {"mode": ["vanilla", "binary"], "subscribeMode": ["vanilla"]},
+                            "ns": None,
+                            "v": 18,
+                            "token": self.token,
+                        },
+                        {"action": "openOptions", "message": None, "ns": None, "v": 18, "token": self.token},
+                        {"action": "userGroup", "message": None, "ns": None, "v": 18, "token": self.token},
+                        {
+                            "action": "setTimeZone",
+                            "message": {"timeZone": 360},
+                            "ns": None,
+                            "v": 18,
+                            "token": self.token,
+                        },
+                        {"action": "historySteps", "message": None, "ns": None, "v": 18, "token": self.token},
+                        {
+                            "action": "tradeHistory",
+                            "message": {"mode": ["binary", "vanilla"], "count": 100, "index_from": 0},
+                            "ns": None,
+                            "v": 18,
+                            "token": self.token,
+                        },
+                    ],
+                },
+            },
+            "ns": "_common",
+        }
+
+        self.wss.send(json.dumps(data2))
+        logger.info(f"Sent first data: {data2}")
+        pause.seconds(3)
+        # self.wss.send(json.dumps(data))
+        # logger.info(f"Sent first data: {data}")
+
+    def on_close(self, *args, **kwargs):  # pylint: disable=unused-argument
         """Method to process websocket close."""
         logger = logging.getLogger(__name__)
         logger.debug("Websocket connection closed.")
         logger.debug(f"Websocket connection closed. Args: {args}")
+        try:
+            self.logger.warning("Trying to reconnect from close")
+            v1 = self.api.connect()
+            if v1:
+                self.logger.info("Sucess!")
+            else:
+                self.logger.critical("A error ocured when reconecting")
+        except Exception as e:
+            self.logger.error(f"A error ocured: {e}")
         global_value.check_websocket_if_connect = 0
