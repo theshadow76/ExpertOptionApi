@@ -48,8 +48,18 @@ class EoApi:
         self.send_websocket_request(action="multipleAction",
                                     msg=BasicData.SendData(self),
                                     ns="_common")
-        print(global_value.ProfileData)
         return global_value.ProfileData
+    def Buy(self, amount, type, assetid, exptime, isdemo):
+        self.logger.info("Buying...")
+        global_value.is_buy = True
+        self.send_websocket_request(action="BuyOption", msg=BasicData.BuyData(self=self, amount=amount, type=type, assetid=assetid, exptime=exptime, isdemo=isdemo), ns="_common")
+        pause.seconds(3)
+        self.send_websocket_request(action="buySuccessful", msg={"action":"buySuccessful","message":{"option":{"ts":"2023-10-19 19:11:34","user_id":585467203,"is_demo":1,"asset_id":142,"type":1,"amount":25,"currency_id":0,"strike_time":1697742694,"strike_rate":1.05859,"exp_time":1697742870,"exp_rate":0,"profit":85,"refund":0,"status":0,"bonus_amount_percent":0,"res_shown":0,"result_amount":0,"ip":"","country":"CL","id":2566903440}}}, ns="_common")
+        return global_value.BuyData
+    def SetDemo(self):
+        data = {"action":"setContext","message":{"is_demo":1},"token": self.token,"ns":1}
+        self.send_websocket_request(action="setContext", msg=data, ns="_common")
+        return True
 
     def connect(self):
         global_value.check_websocket_if_connect = None
@@ -190,6 +200,7 @@ class EoApi:
         self.logger.debug(data)
 
         self.websocket_client.wss.send(bytearray(urllib.parse.quote(data).encode('utf-8')), opcode=websocket.ABNF.OPCODE_BINARY)
+        pause.seconds(5)
         return ns
 
     def nested_dict(self, n, type):

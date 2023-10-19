@@ -48,8 +48,8 @@ class WebSocketClient:
 
         if action == "profile" and global_value.is_profile == True:
             # global_value.ProfileData = message
+            print(message)
             global_value.ProfileData = message
-            print(f"The profile data is: {message}")
 
         if action == "assets" and global_value.is_assets == True:
             # handle assets action
@@ -74,6 +74,9 @@ class WebSocketClient:
         if action == "getCandlesTimeframes" and global_value.is_GetCandles_timeFrames == True:
             # handle getCandlesTimeframes action
             print("Handling getCandlesTimeframes")
+        if action == "buyOption" and global_value.is_buy == True:
+            global_value.BuyData = message
+            print(message)
 
         else:
             print(f"Unknown action: {action}")
@@ -90,18 +93,6 @@ class WebSocketClient:
         logger.debug(f"Websocket client connected. Args: {args}")
         logger.debug("Websocket client connected.")
         global_value.check_websocket_if_connect = 1
-
-        data2 = {
-            "action": "setContext",
-            "message": {
-                "is_demo": 1
-            },
-            "token": self.token,
-            "ns": 1
-        }
-
-        self.wss.send(json.dumps(data2))
-        logger.info(f"Sent first data: {data2}")
     def on_close(self, *args, **kwargs):  # pylint: disable=unused-argument
         """Method to process websocket close."""
         logger = logging.getLogger(__name__)

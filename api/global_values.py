@@ -9,3 +9,5 @@ is_SubscribeCandles = False
 is_GetCandles_timeFrames = False
 is_enviroment = False
 ProfileData = None
+is_buy = False
+BuyData = None

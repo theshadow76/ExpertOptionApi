@@ -33,3 +33,6 @@ class BasicData:
                                                                                  "count": 100, "index_from": 0},
                                                                      "ns": None, "v": 18, "token": self.token}]}}
         return BasicSendData
+    def BuyData(self, amount, type, assetid, exptime, isdemo):
+        data = {"action":"buyOption","message":{"type": type,"amount": amount,"assetid": assetid,"strike_time":1697738686,"expiration_time": exptime,"is_demo": isdemo,"rateIndex":1},"token": self.token,"ns":32}
+        return data
