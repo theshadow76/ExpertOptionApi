@@ -16,6 +16,7 @@ from expoptapi.api.backend.ws.channels.ping import Ping
 
 
 import expoptapi.api.global_values as global_value
+from expoptapi.api.constants import BasicData
 
 class EoApi:
     def __init__(self, token: str, server_region):
@@ -43,10 +44,12 @@ class EoApi:
 
     async def Profile(self):
         self.logger.info("Fetching profile")
-        profile = self.profile
-        latest_message = self.websocket_client.latest_message
-        self.logger.debug("Fetched profile: %s, Latest message: %s", profile, latest_message)
-        return {"Profile": f"{profile}", "LatestMessage": latest_message}
+        global_value.is_profile = True
+        self.send_websocket_request(action="multipleAction",
+                                    msg=BasicData.SendData(self),
+                                    ns="_common")
+        print(global_value.ProfileData)
+        return global_value.ProfileData
 
     def connect(self):
         global_value.check_websocket_if_connect = None
