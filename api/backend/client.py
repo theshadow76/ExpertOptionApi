@@ -47,13 +47,10 @@ class WebSocketClient:
             print("Handling userGroup")
 
         if action == "profile" and global_value.is_profile == True:
-            # global_value.ProfileData = message
-            print(message)
             global_value.ProfileData = message
 
         if action == "assets" and global_value.is_assets == True:
-            # handle assets action
-            print("Handling assets")
+            global_value.AssetsData = message
 
         if action == "getCurrency" and global_value.is_GetCurrency == True:
             # handle getCurrency action
@@ -99,8 +96,3 @@ class WebSocketClient:
         logger.debug("Websocket connection closed.")
         logger.debug(f"Websocket connection closed. Args: {args}")
         global_value.check_websocket_if_connect = 0
-        try:
-            self.api.connect()
-            global_value.check_websocket_if_connect = 1
-        except Exception as e:
-            print(f"A error ocured: {e}")

@@ -16,7 +16,7 @@ from expoptapi.api.backend.ws.channels.ping import Ping
 
 
 import expoptapi.api.global_values as global_value
-from expoptapi.api.constants import BasicData
+from expoptapi.api.constants import BasicData, Symbols
 
 class EoApi:
     def __init__(self, token: str, server_region):
@@ -49,12 +49,18 @@ class EoApi:
                                     msg=BasicData.SendData(self),
                                     ns="_common")
         return global_value.ProfileData
-    def Buy(self, amount, type, assetid, exptime, isdemo):
+    def Buy(self, amount, type, assetid, exptime, isdemo, strike_time):
         self.logger.info("Buying...")
+        self.SetDemo()
         global_value.is_buy = True
-        self.send_websocket_request(action="BuyOption", msg=BasicData.BuyData(self=self, amount=amount, type=type, assetid=assetid, exptime=exptime, isdemo=isdemo), ns="_common")
+        global_value.is_assets = True
+        data = {"action": "assets", "message": {"mode": ["vanilla", "binary"], "subscribeMode": ["vanilla"]}, "ns": None, "v": 18, "token": self.token}
+        self.send_websocket_request(action="assets", msg=data, ns=None)
         pause.seconds(3)
-        self.send_websocket_request(action="buySuccessful", msg={"action":"buySuccessful","message":{"option":{"ts":"2023-10-19 19:11:34","user_id":585467203,"is_demo":1,"asset_id":142,"type":1,"amount":25,"currency_id":0,"strike_time":1697742694,"strike_rate":1.05859,"exp_time":1697742870,"exp_rate":0,"profit":85,"refund":0,"status":0,"bonus_amount_percent":0,"res_shown":0,"result_amount":0,"ip":"","country":"CL","id":2566903440}}}, ns="_common")
+        data1 = global_value.AssetsData['message']
+        print(data1)
+        self.send_websocket_request(action="BuyOption", msg=BasicData.BuyData(self=self, amount=amount, type=type, assetid=assetid, exptime=exptime, isdemo=isdemo, strike_time=strike_time), ns=300)
+        pause.seconds(7)
         return global_value.BuyData
     def SetDemo(self):
         data = {"action":"setContext","message":{"is_demo":1},"token": self.token,"ns":1}

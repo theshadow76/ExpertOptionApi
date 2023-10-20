@@ -11,3 +11,4 @@ is_enviroment = False
 ProfileData = None
 is_buy = False
 BuyData = None
+AssetsData = None

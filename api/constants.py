@@ -4,6 +4,10 @@ class REGION:
     HONG_KONG = "wss://fr24g1hk.expertoption.com/"
     SINGAPORE = "wss://fr24g1sg.expertoption.com/"
     UNITED_STATES = "wss://fr24g1us.expertoption.com/"
+
+class Symbols:
+    EURUSD = 0
+
 class BasicData:
     def __init__(self, token) -> None:
         self.token = token
@@ -33,6 +37,6 @@ class BasicData:
                                                                                  "count": 100, "index_from": 0},
                                                                      "ns": None, "v": 18, "token": self.token}]}}
         return BasicSendData
-    def BuyData(self, amount, type, assetid, exptime, isdemo):
-        data = {"action":"buyOption","message":{"type": type,"amount": amount,"assetid": assetid,"strike_time":1697738686,"expiration_time": exptime,"is_demo": isdemo,"rateIndex":1},"token": self.token,"ns":32}
+    def BuyData(self, amount, type, assetid, exptime, isdemo, strike_time):
+        data = {"action":"buyOption","message":{"type": type,"amount": amount,"assetid": assetid,"strike_time":strike_time,"expiration_time": exptime,"is_demo": isdemo,"rateIndex":1},"token": self.token,"ns":300}
         return data
