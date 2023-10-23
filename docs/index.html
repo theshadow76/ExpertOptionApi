@@ -1,1 +1,53 @@
-<h1>Hello World!</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ExpertOption API</title>
+</head>
+<body>
+
+  <h1>ExpertOption API</h1>
+
+  <h2>Overview</h2>
+  <p>This project provides an unofficial API for Expert Option, a popular binary options trading broker. The API allows you to programmatically interact with the platform, enabling automated trading, data analysis, and more.</p>
+  <p><strong>Project Link:</strong> <a href="https://github.com/theshadow76/ExpertOptionApi">ExpertOptionApi on GitHub</a></p>
+
+  <h2>Table of Contents</h2>
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#installation">Installation</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#examples">Examples</a></li>
+    <li><a href="#contribution">Contribution</a></li>
+    <li><a href="#license">License</a></li>
+  </ul>
+
+  <h2 id="installation">Installation</h2>
+  <p>To get started with this API, you'll need to clone the repository and install the required packages.</p>
+  <pre><code>git clone https://github.com/theshadow76/ExpertOptionApi.git
+cd ExpertOptionApi
+pip install -r requirements.txt
+</code></pre>
+
+  <h2 id="usage">Usage</h2>
+  <p>Here's how to initialize the API and make a simple request:</p>
+  <pre><code>from expert_option_api import ExpertOptionApi
+
+# Initialize the API
+api = ExpertOptionApi(username='your_username', password='your_password')
+
+# Perform operations
+api.buy('EURUSD', 1, 'call', 1)
+</code></pre>
+
+  <h2 id="examples">Examples</h2>
+  <p>Examples of how to use this API for various tasks are available in the <code>examples</code> directory of the repository.</p>
+
+  <h2 id="contribution">Contribution</h2>
+  <p>Contributions are welcome! Feel free to submit a pull request or raise an issue.</p>
+
+  <h2 id="license">License</h2>
+  <p>This project is licensed under the MIT License. See the <code>LICENSE</code> file for details.</p>
+
+</body>
+</html>
