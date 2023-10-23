@@ -1,4 +1,4 @@
-from expoptapi.api.backend.client import WebSocketClient
+from api.backend.client import WebSocketClient
 import asyncio
 import logging
 from collections import defaultdict, OrderedDict
@@ -12,11 +12,11 @@ import websocket
 import decimal
 import urllib
 
-from expoptapi.api.backend.ws.channels.ping import Ping
+from api.backend.ws.channels.ping import Ping
 
 
-import expoptapi.api.global_values as global_value
-from expoptapi.api.constants import BasicData, Symbols
+import api.global_values as global_value
+from api.constants import BasicData, Symbols
 
 class EoApi:
     def __init__(self, token: str, server_region):
