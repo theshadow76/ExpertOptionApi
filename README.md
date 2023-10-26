@@ -24,6 +24,10 @@ git clone https://github.com/theshadow76/ExpertOptionApi.git
 cd ExpertOptionApi
 pip install -r requirements.txt
 ```
+or 
+```bash
+pip install ExpertOptionAPI
+```
 
 ## Usage
 
@@ -50,3 +54,6 @@ Contributions are welcome! Feel free to submit a pull request or raise an issue.
 ## License
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+## PyPi link
+[ExpertOptionAPI](https://pypi.org/project/ExpertOptionAPI/)
