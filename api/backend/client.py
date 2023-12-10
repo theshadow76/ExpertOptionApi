@@ -1,6 +1,6 @@
 import simplejson as json
 import logging
-
+import random
 import websocket
 import api.global_values as global_value
 import pprint
@@ -31,6 +31,27 @@ class WebSocketClient:
             # header=self.api.headers, cookie=self.api.cookie  # TODO test are they needed or not
         )
         self.token = token
+    def reconnect(self):
+        # List of regions to try
+        regions = [global_value.REGION.EUROPE, global_value.REGION.INDIA, global_value.REGION.HONG_KONG, global_value.REGION.SINGAPORE, global_value.REGION.UNITED_STATES]
+        random.shuffle(regions)  # Randomize the order
+
+        for region in regions:
+            try:
+                self.logger.info(f"Attempting to reconnect to {region}")
+                self.wss = websocket.WebSocketApp(
+                    region,
+                    on_message=self.on_message,
+                    on_error=self.on_error,
+                    on_close=self.on_close,
+                    on_open=self.on_open
+                )
+                # Here you might want to establish the connection
+                # Depending on how your WebSocketApp is set up, you might need to start a new thread or use `run_forever`
+                break  # Break the loop if connection is successful
+            except Exception as e:
+                self.logger.error(f"Failed to connect to {region}: {str(e)}")
+                continue  # Try the next region
     def on_message(self, message, *args, **kwargs):
         """Method to process websocket messages."""
         message = message.decode('utf-8')
@@ -90,6 +111,7 @@ class WebSocketClient:
         logger = logging.getLogger(__name__)
         logger.error(error)
         global_value.check_websocket_if_connect = -1
+        self.reconnect()
 
     def on_open(self, *args, **kwargs):  # pylint: disable=unused-argument
         """Method to process websocket open."""
@@ -103,3 +125,4 @@ class WebSocketClient:
         logger.debug("Websocket connection closed.")
         logger.debug(f"Websocket connection closed. Args: {args}")
         global_value.check_websocket_if_connect = 0
+        self.reconnect()
