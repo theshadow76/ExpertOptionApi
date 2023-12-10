@@ -6,6 +6,7 @@ import api.global_values as global_value
 import pprint
 from functools import partial
 import pause
+from api.constants import REGION
 
 class WebSocketClient:
     def __init__(self, api, token):
@@ -33,7 +34,7 @@ class WebSocketClient:
         self.token = token
     def reconnect(self):
         # List of regions to try
-        regions = [global_value.REGION.EUROPE, global_value.REGION.INDIA, global_value.REGION.HONG_KONG, global_value.REGION.SINGAPORE, global_value.REGION.UNITED_STATES]
+        regions = [REGION.EUROPE, REGION.INDIA, REGION.HONG_KONG, REGION.SINGAPORE, REGION.UNITED_STATES]
         random.shuffle(regions)  # Randomize the order
 
         for region in regions:
@@ -48,11 +49,12 @@ class WebSocketClient:
                 )
                 # Here you might want to establish the connection
                 # Depending on how your WebSocketApp is set up, you might need to start a new thread or use `run_forever`
+                self.wss.run_forever()
                 break  # Break the loop if connection is successful
             except Exception as e:
                 self.logger.error(f"Failed to connect to {region}: {str(e)}")
                 continue  # Try the next region
-    def on_message(self, message, *args, **kwargs):
+    def on_message(self, ws, message, *args, **kwargs):
         """Method to process websocket messages."""
         message = message.decode('utf-8')
         self.logger.info(f"Received message: {message}")
@@ -106,10 +108,10 @@ class WebSocketClient:
         else:
             print(f"Unknown action: {action}")
 
-    def on_error(self, error):  # pylint: disable=unused-argument
+    def on_error(self, error, *args, **kwargs):  # pylint: disable=unused-argument
         """Method to process websocket errors."""
         logger = logging.getLogger(__name__)
-        logger.error(error)
+        logger.error(f"WebSocket error: {error}, Args: {args}, Kwargs: {kwargs}")
         global_value.check_websocket_if_connect = -1
         self.reconnect()
 
