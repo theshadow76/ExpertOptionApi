@@ -11,6 +11,7 @@ import pause
 import websocket
 import decimal
 import urllib
+from websocket._exceptions import WebSocketConnectionClosedException
 
 from api.backend.ws.channels.ping import Ping
 
@@ -24,7 +25,16 @@ class EoApi:
         self.server_region = server_region
 
         self.websocket_client = WebSocketClient(api=self, token=self.token)  # Composition
+        # Set logging level and format
         self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+
+        # Create file handler and add it to the logger
+        file_handler = logging.FileHandler('expert.log')
+        file_handler.setFormatter(formatter)
+        self.logger.addHandler(file_handler)
+
 
         self.logger.info("Initializing EoApi with token: %s, region: %s", token, server_region)
 
@@ -42,7 +52,7 @@ class EoApi:
 
         self.websocket_client.wss.run_forever()
 
-    async def Profile(self):
+    def Profile(self):
         self.logger.info("Fetching profile")
         global_value.is_profile = True
         self.send_websocket_request(action="multipleAction",
@@ -50,18 +60,19 @@ class EoApi:
                                     ns="_common")
         return global_value.ProfileData
     def Buy(self, amount, type, assetid, exptime, isdemo, strike_time):
-        self.logger.info("Buying...")
-        self.SetDemo()
-        global_value.is_buy = True
-        global_value.is_assets = True
-        data = {"action": "assets", "message": {"mode": ["vanilla", "binary"], "subscribeMode": ["vanilla"]}, "ns": None, "v": 18, "token": self.token}
-        self.send_websocket_request(action="assets", msg=data, ns=None)
-        pause.seconds(3)
-        data1 = global_value.AssetsData['message']
-        print(data1)
-        self.send_websocket_request(action="BuyOption", msg=BasicData.BuyData(self=self, amount=amount, type=type, assetid=assetid, exptime=exptime, isdemo=isdemo, strike_time=strike_time), ns=300)
-        pause.seconds(7)
-        return global_value.BuyData
+        try:
+            self.logger.info("Buying...")
+            print("Buying...") # replace in prod
+            self.send_websocket_request(action="BuyOption", msg=BasicData.BuyData(self=self, amount=amount, type=type, assetid=assetid, exptime=exptime, isdemo=isdemo, strike_time=strike_time), ns=300)
+            return global_value.BuyData
+        except WebSocketConnectionClosedException as e:
+            print(f"Error: {e}")
+            self.websocket_client.wss.close()
+            self.connect()
+            self.logger.info("Buying...")
+            print("Buying...") # replace in prod
+            self.send_websocket_request(action="BuyOption", msg=BasicData.BuyData(self=self, amount=amount, type=type, assetid=assetid, exptime=exptime, isdemo=isdemo, strike_time=strike_time), ns=300)
+            return global_value.BuyData
     def SetDemo(self):
         data = {"action":"setContext","message":{"is_demo":1},"token": self.token,"ns":1}
         self.send_websocket_request(action="setContext", msg=data, ns="_common")

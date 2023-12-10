@@ -15,6 +15,13 @@ class WebSocketClient:
         """
         self.api = api
         self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+
+        # Create file handler and add it to the logger
+        file_handler = logging.FileHandler('expert.log')
+        file_handler.setFormatter(formatter)
+        self.logger.addHandler(file_handler)
         self.latest_message = None  # To store the latest message
         self.wss = websocket.WebSocketApp(
             "wss://fr24g1eu.expertoption.com/",     on_message=self.on_message,
