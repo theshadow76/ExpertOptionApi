@@ -63,9 +63,14 @@ class EoApi:
         return global_value.ProfileData
     def GetCandles(self):
         data = {"action":"getCandlesTimeframes","ns":9,"token":self.token}
-        global_value.is_GetCandles = True
+        global_value.is_GetCandles_timeFrames = True
         self.send_websocket_request(action="getCandlesTimeframes", msg=data)
         return global_value.CandlesData
+    def GetCandlesHistory(self, periods: int = time.time()):
+        data = {"action":"assetHistoryCandles","message":{"assetid":240,"periods":[periods],"timeframes":[0]},"token":self.token,"ns":11}
+        global_value.is_GetassetHistoryCandles = True
+        self.send_websocket_request(action="assetHistoryCandles", msg=data)
+        return global_value.assetHistoryCandles
     def Buy(self, amount: int = 1, type: str = "call", assetid: int = 240, exptime: int = 60, isdemo: int = 1, strike_time: int = int(time.time())):
     # Your method implementation here
         try:

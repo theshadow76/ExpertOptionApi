@@ -14,3 +14,5 @@ BuyData = None
 AssetsData = None
 is_GetCandles = False
 CandlesData = None
+is_GetassetHistoryCandles = False
+assetHistoryCandles = None

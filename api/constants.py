@@ -15,6 +15,7 @@ class REGION:
         "UNITED_STATES": "wss://fr24g1us.expertoption.com/"
     }
 
+
     def __getattr__(self, key):
         try:
             return self.REGIONS[key]

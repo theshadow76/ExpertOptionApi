@@ -36,8 +36,8 @@ class WebSocketClient:
         self.token = token
     def reconnect(self):
         # List of regions to try
-        regions = [REGION.EUROPE, REGION.INDIA, REGION.HONG_KONG, REGION.SINGAPORE, REGION.UNITED_STATES]
-        random.shuffle(regions)  # Randomize the order
+        REG = REGION()
+        regions = REG.get_regions()
 
         for region in regions:
             try:
@@ -116,11 +116,14 @@ class WebSocketClient:
         if action == "getCandlesTimeframes" and global_value.is_GetCandles_timeFrames == True:
             # handle getCandlesTimeframes action
             print("Handling getCandlesTimeframes")
+            global_value.CandlesData = message
         if action == "buyOption" and global_value.is_buy == True:
             global_value.BuyData = message
             print(message)
         if action == "candles" and global_value.is_GetCandles == True:
-            global_value.CandlesData = sub_message
+            global_value.CandlesData = message
+        if action == "assetHistoryCandles" and global_value.is_GetassetHistoryCandles == True:
+            global_value.assetHistoryCandles = message
 
         else:
             print(f"Unknown action: {action}")
