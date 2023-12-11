@@ -12,3 +12,5 @@ ProfileData = None
 is_buy = False
 BuyData = None
 AssetsData = None
+is_GetCandles = False
+CandlesData = None
