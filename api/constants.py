@@ -24,10 +24,6 @@ class REGION:
     def get_regions(self, randomize: bool = True):
         return sorted(list(self.REGIONS.values()), key=lambda k: random.random())
 
-
-    
-
-
 class Symbols:
     EURUSD = 0
 
