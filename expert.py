@@ -63,7 +63,9 @@ class EoApi:
         return global_value.ProfileData
     def GetCandles(self):
         data = {"action":"getCandlesTimeframes","ns":9,"token":self.token}
+        global_value.is_GetCandles = True
         self.send_websocket_request(action="getCandlesTimeframes", msg=data)
+        return global_value.CandlesData
     def Buy(self, amount: int = 1, type: str = "call", assetid: int = 240, exptime: int = 60, isdemo: int = 1, strike_time: int = int(time.time())):
     # Your method implementation here
         try:

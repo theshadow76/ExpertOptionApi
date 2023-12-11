@@ -119,6 +119,8 @@ class WebSocketClient:
         if action == "buyOption" and global_value.is_buy == True:
             global_value.BuyData = message
             print(message)
+        if action == "candles" and global_value.is_GetCandles == True:
+            global_value.CandlesData = sub_message
 
         else:
             print(f"Unknown action: {action}")
