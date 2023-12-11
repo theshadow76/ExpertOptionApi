@@ -1,9 +1,32 @@
+import random
+
 class REGION:
-    EUROPE = "wss://fr24g1eu.expertoption.com/"
-    INDIA = "wss://fr24g1in.expertoption.com/"
-    HONG_KONG = "wss://fr24g1hk.expertoption.com/"
-    SINGAPORE = "wss://fr24g1sg.expertoption.com/"
-    UNITED_STATES = "wss://fr24g1us.expertoption.com/"
+    # EUROPE = "wss://fr24g1eu.expertoption.com/"
+    # INDIA = "wss://fr24g1in.expertoption.com/"
+    # HONG_KONG = "wss://fr24g1hk.expertoption.com/"
+    # SINGAPORE = "wss://fr24g1sg.expertoption.com/"
+    # UNITED_STATES = "wss://fr24g1us.expertoption.com/"
+    
+    REGIONS = {
+        "EUROPE": "wss://fr24g1eu.expertoption.com/",
+        "INDIA": "wss://fr24g1in.expertoption.com/",
+        "HONG_CONG": "wss://fr24g1hk.expertoption.com/",
+        "SINGAPORE": "wss://fr24g1sg.expertoption.com/",
+        "UNITED_STATES": "wss://fr24g1us.expertoption.com/"
+    }
+
+    def __getattr__(self, key):
+        try:
+            return self.REGIONS[key]
+        except KeyError:
+            raise AttributeError(f"'{self.REGIONS}' object has no attribute '{key}'")
+    
+    def get_regions(self, randomize: bool = True):
+        return sorted(list(self.REGIONS.values()), key=lambda k: random.random())
+
+
+    
+
 
 class Symbols:
     EURUSD = 0
