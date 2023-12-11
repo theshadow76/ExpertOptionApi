@@ -22,7 +22,9 @@ class REGION:
             raise AttributeError(f"'{self.REGIONS}' object has no attribute '{key}'")
     
     def get_regions(self, randomize: bool = True):
-        return sorted(list(self.REGIONS.values()), key=lambda k: random.random())
+        if randomize:
+            return sorted(list(self.REGIONS.values()), key=lambda k: random.random())
+        return list(self.REGIONS.values())
 
 class Symbols:
     EURUSD = 0
