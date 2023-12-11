@@ -12,6 +12,7 @@ import websocket
 import decimal
 import urllib
 from websocket._exceptions import WebSocketConnectionClosedException
+import datetime
 
 from api.backend.ws.channels.ping import Ping
 
@@ -23,6 +24,7 @@ class EoApi:
     def __init__(self, token: str, server_region):
         self.token = token
         self.server_region = server_region
+        self.utli = _Utils()
 
         self.websocket_client = WebSocketClient(api=self, token=self.token)  # Composition
         # Set logging level and format
@@ -50,7 +52,7 @@ class EoApi:
         self.ping_thread.daemon = True  # Set the thread as a daemon so it will terminate when the main program terminates
         self.ping_thread.start()  # Start the auto_ping thread
 
-        self.websocket_client.wss.run_forever()
+        # self.websocket_client.wss.run_forever()
 
     def Profile(self):
         self.logger.info("Fetching profile")
@@ -59,11 +61,15 @@ class EoApi:
                                     msg=BasicData.SendData(self),
                                     ns="_common")
         return global_value.ProfileData
-    def Buy(self, amount, type, assetid, exptime, isdemo, strike_time):
+    def Buy(self, amount: int = 1, type: str = "call", assetid: int = 240, exptime: int = 60, isdemo: int = 1, strike_time: int = int(time.time())):
+    # Your method implementation here
         try:
             self.logger.info("Buying...")
             print("Buying...") # replace in prod
-            self.send_websocket_request(action="BuyOption", msg=BasicData.BuyData(self=self, amount=amount, type=type, assetid=assetid, exptime=exptime, isdemo=isdemo, strike_time=strike_time), ns=300)
+            if isdemo == 1:
+                self.SetDemo()
+            exptime_ = self.utli.roundTimeToTimestamp()
+            self.send_websocket_request(action="BuyOption", msg=BasicData.BuyData(self=self, amount=amount, type=type, assetid=assetid, exptime=exptime_, isdemo=isdemo, strike_time=strike_time), ns=300)
             return global_value.BuyData
         except WebSocketConnectionClosedException as e:
             print(f"Error: {e}")
@@ -257,3 +263,18 @@ class _api:
         # WebSocket loop should probably not be here.
         # You should start it in your main function or some entry point.
         return {"Response": "Success"}
+
+class _Utils:
+    def __init__(self) -> None:
+        pass
+    def roundTimeToTimestamp(self, dt=None, roundTo=60):
+        """Round a datetime object to any time lapse in seconds and return Unix timestamp
+        dt : datetime.datetime object, default now.
+        roundTo : Closest number of seconds to round to, default 1 minute.
+        """
+        if dt == None: 
+            dt = datetime.datetime.now()
+        seconds = (dt.replace(tzinfo=None) - dt.min).seconds
+        rounding = (seconds + roundTo / 2) // roundTo * roundTo
+        rounded_dt = dt + datetime.timedelta(0, rounding - seconds, -dt.microsecond)
+        return rounded_dt.timestamp()

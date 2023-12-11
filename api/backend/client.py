@@ -7,6 +7,8 @@ import pprint
 from functools import partial
 import pause
 from api.constants import REGION
+import threading
+import ssl
 
 class WebSocketClient:
     def __init__(self, api, token):
@@ -49,7 +51,20 @@ class WebSocketClient:
                 )
                 # Here you might want to establish the connection
                 # Depending on how your WebSocketApp is set up, you might need to start a new thread or use `run_forever`
-                self.wss.run_forever()
+                self.websocket_thread = threading.Thread(target=self.wss.run_forever, kwargs={
+                    'sslopt': {
+                        "check_hostname": False,
+                        "cert_reqs": ssl.CERT_NONE,
+                        "ca_certs": "cacert.pem"
+                    },
+                    "ping_interval": 0,
+                    'skip_utf8_validation': True,
+                    "origin": "https://app.expertoption.com",
+                    # "http_proxy_host": '127.0.0.1', "http_proxy_port": 8890
+                })
+
+                self.websocket_thread.daemon = True
+                self.websocket_thread.start()
                 break  # Break the loop if connection is successful
             except Exception as e:
                 self.logger.error(f"Failed to connect to {region}: {str(e)}")
