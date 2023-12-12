@@ -67,10 +67,41 @@ class EoApi:
         self.send_websocket_request(action="getCandlesTimeframes", msg=data)
         return global_value.CandlesData
     def GetCandlesHistory(self, periods: int = time.time()):
-        data = {"action":"assetHistoryCandles","message":{"assetid":240,"periods":[periods],"timeframes":[0]},"token":self.token,"ns":11}
+        # Starting interval of 300 seconds
+        base_interval = 300
+
+        # Initialize the list to store the periods
+        desired_periods = []
+
+        # Calculate the periods, incrementing the interval each time
+        for i in range(10):
+            if i < 9:  # For the first nine periods, add 127 seconds each time
+                round_interval = base_interval + i * 127
+            else:  # For the last period, add 83 seconds instead
+                round_interval = base_interval + i * 127 + 83
+
+            # Calculate the rounded timestamp
+            rounded_timestamp = self.utli.roundTimeToLastTimestamp(dt=None, roundTo=round_interval)
+
+            # Add the period to the list
+            desired_periods.append([rounded_timestamp, rounded_timestamp + round_interval])
+
+        # Update data with the new periods
+        data = {
+            "action": "assetHistoryCandles",
+            "message": {
+                "assetid": 240,
+                "periods": desired_periods,
+                "timeframes": [0]  # Adjusted as per your requirement
+            },
+            "token": self.token,  # Ensure this is the correct token
+            "ns": 11
+        }
+        print(data)
         global_value.is_GetassetHistoryCandles = True
         self.send_websocket_request(action="assetHistoryCandles", msg=data)
         return global_value.assetHistoryCandles
+
     def Buy(self, amount: int = 1, type: str = "call", assetid: int = 240, exptime: int = 60, isdemo: int = 1, strike_time: int = int(time.time())):
     # Your method implementation here
         try:
@@ -288,3 +319,15 @@ class _Utils:
         rounding = (seconds + roundTo / 2) // roundTo * roundTo
         rounded_dt = dt + datetime.timedelta(0, rounding - seconds, -dt.microsecond)
         return rounded_dt.timestamp()
+    def roundTimeToLastTimestamp(self, dt=None, roundTo=60):
+        """Round a datetime object down to any time lapse in seconds and return Unix timestamp
+        dt : datetime.datetime object, default now.
+        roundTo : Number of seconds to round down to, default 1 minute.
+        """
+        if dt == None: 
+            dt = datetime.datetime.now()
+        seconds = (dt.replace(tzinfo=None) - dt.min).seconds
+        rounding = seconds // roundTo * roundTo
+        rounded_dt = dt - datetime.timedelta(seconds=seconds - rounding, microseconds=dt.microsecond)
+        return int(rounded_dt.timestamp())
+
