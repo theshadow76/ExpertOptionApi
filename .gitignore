@@ -1,3 +1,5 @@
 test_use.py
-./expert.log
 expert.log
+ExpertOptionAPI.egg-info
+dist
+build

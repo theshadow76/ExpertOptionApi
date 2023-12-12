@@ -5,14 +5,14 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='ExpertOptionAPI',
-    version='0.2',
+    version='0.3',
     packages=find_packages(),
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=[
         # list your package dependencies here
-        "urllib",
         "websocket",
-        "simplejson"
+        "simplejson",
+        "pandas"
     ],
 )
