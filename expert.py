@@ -62,9 +62,9 @@ class EoApi:
                                     ns="_common")
         return global_value.ProfileData
     def GetCandles(self):
-        data = {"action":"getCandlesTimeframes","ns":9,"token":self.token}
+        data =  {"action":"subscribeCandles","message":{"assets":[{"id":142,"timeframes":[0,5]}],"modes":["vanilla"]},"token":self.token,"ns":18}
         global_value.is_GetCandles_timeFrames = True
-        self.send_websocket_request(action="getCandlesTimeframes", msg=data)
+        self.send_websocket_request(action="subscribeCandles", msg=data)
         return global_value.CandlesData
     def GetCandlesHistory(self, periods: int = time.time()):
         # Starting interval of 300 seconds
@@ -109,8 +109,9 @@ class EoApi:
             print("Buying...") # replace in prod
             if isdemo == 1:
                 self.SetDemo()
-            exptime_ = self.utli.roundTimeToTimestamp()
-            self.send_websocket_request(action="BuyOption", msg=BasicData.BuyData(self=self, amount=amount, type=type, assetid=assetid, exptime=exptime_, isdemo=isdemo, strike_time=strike_time), ns=300)
+            exptime_ = self.utli.roundTimeToTimestamp(dt=None, roundTo=exptime)
+            print(f"The exp_time is: {int(exptime_)}")
+            self.send_websocket_request(action="BuyOption", msg={"action":"buyOption","message":{"type":f"{type}","amount":amount,"assetid":assetid,"strike_time":strike_time,"expiration_time":int(exptime_),"is_demo":isdemo,"rateIndex":1},"token":f"{self.token}","ns":44})
             return global_value.BuyData
         except WebSocketConnectionClosedException as e:
             print(f"Error: {e}")
@@ -198,6 +199,74 @@ class EoApi:
                                                                                  "count": 100, "index_from": 0},
                                                                      "ns": None, "v": 18, "token": self.token}]}},
                                     ns="_common")
+        data = {
+                "action": "multipleAction",
+                "message": {
+                    "actions": [
+                        {
+                            "action": "userGroup",
+                            "ns": 1,
+                            "token": self.token
+                        },
+                        {
+                            "action": "profile",
+                            "ns": 2,
+                            "token": self.token
+                        },
+                        {
+                            "action": "assets",
+                            "message": {
+                                "mode": ["vanilla"],
+                                "subscribeMode": ["vanilla"]
+                            },
+                            "ns": 3,
+                            "token": self.token
+                        },
+                        {
+                            "action": "getCurrency",
+                            "ns": 4,
+                            "token": self.token
+                        },
+                        {
+                            "action": "getCountries",
+                            "ns": 5,
+                            "token": self.token
+                        },
+                        {
+                            "action": "environment",
+                            "ns": 6,
+                            "token": self.token
+                        },
+                        {
+                            "action": "defaultSubscribeCandles",
+                            "message": {
+                                "modes": ["vanilla"],
+                                "timeframes": [0, 5]
+                            },
+                            "ns": 7,
+                            "token": self.token
+                        },
+                        {
+                            "action": "setTimeZone",
+                            "message": {
+                                "timeZone": -180
+                            },
+                            "ns": 8,
+                            "token": self.token
+                        },
+                        {
+                            "action": "getCandlesTimeframes",
+                            "ns": 9,
+                            "token": self.token
+                        }
+                    ]
+                },
+                "token": self.token,
+                "ns": 2
+            }
+        
+        self.send_websocket_request(action="multipleAction", msg=data)
+
         start_t = time.time()
         self.logger.info("WebSocket connected")
         return True

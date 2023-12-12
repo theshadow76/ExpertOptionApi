@@ -81,15 +81,16 @@ rsi = RSI()
 
 # Retrieve candle data
 assetHistoryCandles = rsi._assetHistoryCandles()
+candles = rsi._GetCandlesData()
 
 # Check the output of assetHistoryCandles
-print("Asset History Candles:", assetHistoryCandles)
+print("Asset History Candles:", candles)
 
 # Initialize Statistics class
 rsiStats = Statistics()
 
 # Calculate RSI using the retrieved data
-data = rsiStats._CalculateRSI(data=assetHistoryCandles)
+data = rsiStats._CalculateRSI(data=candles)
 
 # Print the RSI data
 print(data)

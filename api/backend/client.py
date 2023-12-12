@@ -120,10 +120,15 @@ class WebSocketClient:
         if action == "buyOption" and global_value.is_buy == True:
             global_value.BuyData = message
             print(message)
-        if action == "candles" and global_value.is_GetCandles == True:
+        if action == "candles":
             global_value.CandlesData = message
         if action == "assetHistoryCandles" and global_value.is_GetassetHistoryCandles == True:
             global_value.assetHistoryCandles = message
+        if action == "error":
+            global_value.ErrorData = message
+            print(f"A error ocured: {message}")
+        if action == "subscribeCandles":
+            print(f"The subscribe candles data is: {message}")
 
         else:
             print(f"Unknown action: {action}")
