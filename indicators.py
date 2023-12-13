@@ -47,22 +47,6 @@ class _AlligatorIndicator:
         if not prev_order and last_order:
             # Execute a buy order
             try:
-                bot.Buy(amount=1, type="call", assetid=240, exptime=60, isdemo=1, strike_time=int(time.time()))
-                return "Buy signal executed"
-            except BuyingExpirationInvalid as e:
-                print(f"A error ocured: {e}")
-                attemps = 10
-                for i in range(attemps):
-                    try:
-                        bot.Buy(amount=1, type="call", assetid=240, exptime=60, isdemo=1, strike_time=int(time.time()))
-                        return "Buy succeded"
-                    except Exception as e:
-                        print(f"Another exception ocured: {e}")
-
-        # Check for a sell signal (downward trend)
-        if prev_order and not last_order:
-            # Execute a sell order
-            try:
                 bot.Buy(amount=1, type="put", assetid=240, exptime=60, isdemo=1, strike_time=int(time.time()))
                 return "Buy signal executed"
             except BuyingExpirationInvalid as e:
@@ -71,6 +55,22 @@ class _AlligatorIndicator:
                 for i in range(attemps):
                     try:
                         bot.Buy(amount=1, type="put", assetid=240, exptime=60, isdemo=1, strike_time=int(time.time()))
+                        return "Buy succeded"
+                    except Exception as e:
+                        print(f"Another exception ocured: {e}")
+
+        # Check for a sell signal (downward trend)
+        if prev_order and not last_order:
+            # Execute a sell order
+            try:
+                bot.Buy(amount=1, type="call", assetid=240, exptime=60, isdemo=1, strike_time=int(time.time()))
+                return "Buy signal executed"
+            except BuyingExpirationInvalid as e:
+                print(f"A error ocured: {e}")
+                attemps = 10
+                for i in range(attemps):
+                    try:
+                        bot.Buy(amount=1, type="call", assetid=240, exptime=60, isdemo=1, strike_time=int(time.time()))
                         return "Sell succeded"
                     except Exception as e:
                         print(f"Another exception ocured: {e}")
