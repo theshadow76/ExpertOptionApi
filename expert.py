@@ -125,6 +125,28 @@ class EoApi:
         data = {"action":"setContext","message":{"is_demo":1},"token": self.token,"ns":1}
         self.send_websocket_request(action="setContext", msg=data, ns="_common")
         return True
+    def GetSingleCandles(self):
+        # Starting interval of 300 seconds
+        base_interval = 300
+
+        # Initialize the list to store the periods
+        desired_periods = []
+
+        # Calculate the periods, incrementing the interval each time
+        for i in range(2):
+            if i < 9:  # For the first nine periods, add 127 seconds each time
+                round_interval = base_interval + i * 127
+            else:  # For the last period, add 83 seconds instead
+                round_interval = base_interval + i * 127 + 83
+
+            # Calculate the rounded timestamp
+            rounded_timestamp = self.utli.roundTimeToLastTimestamp(dt=None, roundTo=round_interval)
+
+            # Add the period to the list
+            desired_periods.append([rounded_timestamp, rounded_timestamp + round_interval])
+        data = {"action":"assetHistoryCandles","message":{"assetid":240,"periods":desired_periods,"timeframes":[5]},"token":self.token,"ns":27}
+        self.send_websocket_request(action="assetHistoryCandles", msg=data)
+        return global_value.SingleCandleData
 
     def connect(self):
         global_value.check_websocket_if_connect = None
@@ -265,6 +287,47 @@ class EoApi:
                 "ns": 2
             }
         
+        data2 = {
+            "action": "multipleAction",
+            "message": {
+                "actions": [
+                    {
+                        "action": "openOptions",
+                        "ns": 1,
+                        "token": self.token
+                    },
+                    {
+                        "action": "tradeHistory",
+                        "message": {"index_from": 0, "count": 20, "is_demo": 1},
+                        "ns": 2,
+                        "token": self.token
+                    },
+                    {
+                        "action": "tradeHistory",
+                        "message": {"index_from": 0, "count": 20, "is_demo": 0},
+                        "ns": 3,
+                        "token": self.token
+                    },
+                    {
+                        "action": "getTournaments",
+                        "ns": 4,
+                        "token": self.token
+                    },
+                    {
+                        "action": "getTournamentInfo",
+                        "ns": 5,
+                        "token": self.token
+                    }
+                ]
+            },
+            "token": self.token,
+            "ns": 4
+        }
+
+        self.SetDemo()
+
+        self.send_websocket_request(action="multipleAction", msg=data2)
+
         self.send_websocket_request(action="multipleAction", msg=data)
 
         start_t = time.time()

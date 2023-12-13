@@ -17,3 +17,4 @@ CandlesData = None
 is_GetassetHistoryCandles = False
 assetHistoryCandles = None
 ErrorData = None
+SingleCandleData = None

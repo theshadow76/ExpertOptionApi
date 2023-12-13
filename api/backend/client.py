@@ -9,6 +9,7 @@ import pause
 from api.constants import REGION
 import threading
 import ssl
+from _exceptions.Buying.BuyExceptions import BuyingExpirationInvalid
 
 class WebSocketClient:
     def __init__(self, api, token):
@@ -122,12 +123,16 @@ class WebSocketClient:
             print(message)
         if action == "candles":
             global_value.CandlesData = message
-        if action == "assetHistoryCandles" and global_value.is_GetassetHistoryCandles == True:
-            global_value.assetHistoryCandles = message
+        if action == "assetHistoryCandles":
+            global_value.SingleCandleData = message
+            print(f"The assetHistoryCandles data is: {message}")
         if action == "error":
             global_value.ErrorData = message
             print(f"A error ocured: {message}")
+            if "ERROR_EXPIRATION_INVALID" in message:
+                raise BuyingExpirationInvalid()
         if action == "subscribeCandles":
+            global_value.SingleCandleData = message
             print(f"The subscribe candles data is: {message}")
 
         else:
