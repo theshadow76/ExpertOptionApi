@@ -43,16 +43,66 @@ pip install ExpertOptionAPI
 
 ## Usage
 
-To start using the API, initialize it with your credentials and begin trading or fetching data:
+To start using the API, here is a example where it buy's a random amount, and a random option (call or put):
 
 ```python
-from expert_option_api import ExpertOptionApi
+from expert import EoApi as ExpertAPI
+import time
+import logging
+import random
 
-# Initialize the API with your credentials
-api = ExpertOptionApi(username='your_username', password='your_password')
+# Create a logger object
+logger = logging.getLogger(__name__)
 
-# Example operation: Buy a binary option
-api.buy('EURUSD', 1, 'call', 1)
+# Set the desired logging level
+logger.setLevel(logging.INFO)
+
+# Create a formatter to format the log messages
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+
+# Create a console handler to send logs to the console
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(formatter)
+
+# Add the console handler to the logger
+logger.addHandler(console_handler)
+# Create a file handler to send logs to a file
+file_handler = logging.FileHandler('expert.log')
+file_handler.setFormatter(formatter)
+
+# Add the file handler to the logger
+logger.addHandler(file_handler)
+
+# Initialize the expert object with the logger
+expert = ExpertAPI(token="YOUR_TOKEN", server_region="wss://fr24g1eu.expertoption.com/")
+
+expert.connect()
+
+expert.SetDemo()
+
+profile = expert.Profile()
+print(f"PRofile is: {profile}")
+
+candles = expert.GetCandles()
+print(f"The candles are: {candles}")
+
+trades = 15
+
+for i in range(trades):
+    trade_choice = random.randint(1, 2)
+    strik_time = time.time()
+    amount = random.randint(10, 500)
+    try:
+        if trade_choice == 1:
+            expert.Buy(amount=amount, type="call", assetid=240, exptime=60, isdemo=1, strike_time=strik_time)
+        elif trade_choice == 2:
+            expert.Buy(amount=amount, type="put", assetid=240, exptime=60, isdemo=1, strike_time=strik_time)
+        else:
+            print("Error")
+        time.sleep(15)
+    except Exception as e:
+        print(f"Errror: {e}")
+        time.sleep(60)
 ```
 
 For detailed documentation and more complex use cases, refer to the `docs` directory.
