@@ -147,6 +147,29 @@ class EoApi:
         data = {"action":"assetHistoryCandles","message":{"assetid":240,"periods":desired_periods,"timeframes":[5]},"token":self.token,"ns":27}
         self.send_websocket_request(action="assetHistoryCandles", msg=data)
         return global_value.SingleCandleData
+    
+    def GetMultipleCandlesFromNow(self):
+        # Starting interval of 300 seconds
+        base_interval = 60
+
+        # Initialize the list to store the periods
+        desired_periods = []
+
+        # Calculate the periods, incrementing the interval each time
+        for i in range(10):
+            if i < 9:  # For the first nine periods, add 127 seconds each time
+                round_interval = base_interval + i * 127
+            else:  # For the last period, add 83 seconds instead
+                round_interval = base_interval + i * 127 + 83
+
+            # Calculate the rounded timestamp
+            rounded_timestamp = self.utli.roundTimeToLastTimestamp(dt=None, roundTo=round_interval)
+
+            # Add the period to the list
+            desired_periods.append([rounded_timestamp, rounded_timestamp + round_interval])
+        data = {"action":"assetHistoryCandles","message":{"assetid":240,"periods":desired_periods,"timeframes":[5]},"token":self.token,"ns":27}
+        self.send_websocket_request(action="assetHistoryCandles", msg=data)
+        return global_value.SingleCandleData
 
     def connect(self):
         global_value.check_websocket_if_connect = None

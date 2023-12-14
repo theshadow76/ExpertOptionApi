@@ -83,9 +83,9 @@ def AlligatorIndicatorTest(token, server_region):
     expert.connect()
 
     # << LOOP >>
-    for i in range(50):
+    for i in range(55550):
         # << GET DATA >>
-        candles = expert.GetSingleCandles()
+        candles = expert.GetMultipleCandlesFromNow()
 
         # << Sample Usage >>
         alligator = _AlligatorIndicator(candles)
