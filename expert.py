@@ -14,6 +14,8 @@ import urllib
 from websocket._exceptions import WebSocketConnectionClosedException
 import datetime
 
+from _exceptions.Buying.BuyExceptions import BuyingExpirationInvalid
+
 from api.backend.ws.channels.ping import Ping
 
 
@@ -111,8 +113,18 @@ class EoApi:
                 self.SetDemo()
             exptime_ = self.utli.roundTimeToTimestamp(dt=None, roundTo=exptime)
             print(f"The exp_time is: {int(exptime_)}")
-            self.send_websocket_request(action="BuyOption", msg={"action":"buyOption","message":{"type":f"{type}","amount":amount,"assetid":assetid,"strike_time":strike_time,"expiration_time":int(exptime_),"is_demo":isdemo,"rateIndex":1},"token":f"{self.token}","ns":44})
-            return global_value.BuyData
+            try:
+                self.send_websocket_request(action="BuyOption", msg={"action":"buyOption","message":{"type":f"{type}","amount":amount,"assetid":assetid,"strike_time":strike_time,"expiration_time":int(exptime_),"is_demo":isdemo,"rateIndex":1},"token":f"{self.token}","ns":44})
+                return global_value.BuyData
+            except BuyingExpirationInvalid as e:
+                for i in range(15):
+                    exp_time_v2 = self.utli.roundTimeToTimestamp(dt=None, roundTo=60)
+                    self.send_websocket_request(action="BuyOption", msg={"action":"buyOption","message":{"type":f"{type}","amount":amount,"assetid":assetid,"strike_time":strike_time,"expiration_time":int(exp_time_v2),"is_demo":isdemo,"rateIndex":1},"token":f"{self.token}","ns":44})
+                    try:
+                        time.sleep(10)
+                        return global_value.BuyData
+                    except BuyingExpirationInvalid as e2:
+                        print(f"Still got the error: {e2}")
         except WebSocketConnectionClosedException as e:
             print(f"Error: {e}")
             self.websocket_client.wss.close()
@@ -150,7 +162,7 @@ class EoApi:
     
     def GetMultipleCandlesFromNow(self):
         # Starting interval of 300 seconds
-        base_interval = 60
+        base_interval = 120
 
         # Initialize the list to store the periods
         desired_periods = []
@@ -160,7 +172,7 @@ class EoApi:
             if i < 9:  # For the first nine periods, add 127 seconds each time
                 round_interval = base_interval + i * 127
             else:  # For the last period, add 83 seconds instead
-                round_interval = base_interval + i * 127 + 83
+                round_interval = base_interval + i * 127 + 87
 
             # Calculate the rounded timestamp
             rounded_timestamp = self.utli.roundTimeToLastTimestamp(dt=None, roundTo=round_interval)
