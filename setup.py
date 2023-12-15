@@ -6,7 +6,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setup(
     name='ExpertOptionAPI',
     version='0.3',
-    packages=find_packages(),
+    packages=find_packages(where="ExpertOptionAPI"),
+    package_dir={'': "ExpertOptionAPI"},
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=[
