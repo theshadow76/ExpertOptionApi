@@ -1,3 +1,5 @@
+# Made by © Vigo Walker
+
 from api.backend.client import WebSocketClient
 import asyncio
 import logging
