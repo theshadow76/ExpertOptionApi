@@ -1,7 +1,7 @@
 import numpy as np
-from expert import EoApi as ExpertAPI
+from ExpertOptionAPI.expert import EoApi as ExpertAPI
 import time
-from _exceptions.Buying.BuyExceptions import BuyingExpirationInvalid
+from ExpertOptionAPI._exceptions.Buying.BuyExceptions import BuyingExpirationInvalid
 
 class _AlligatorIndicator:
     def __init__(self, candles):

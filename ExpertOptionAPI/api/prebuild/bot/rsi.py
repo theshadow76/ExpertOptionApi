@@ -1,7 +1,7 @@
 # Bot using the RSI indicator
 
 # imports
-from expert import EoApi as ExpertOptionAPI
+from ExpertOptionAPI.expert import EoApi as ExpertOptionAPI
 import numpy as np
 
 

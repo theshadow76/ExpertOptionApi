@@ -2,14 +2,14 @@ import simplejson as json
 import logging
 import random
 import websocket
-import api.global_values as global_value
+import ExpertOptionAPI.api.global_values as global_value
 import pprint
 from functools import partial
 import pause
-from api.constants import REGION
+from ExpertOptionAPI.api.constants import REGION
 import threading
 import ssl
-from _exceptions.Buying.BuyExceptions import BuyingExpirationInvalid
+from ExpertOptionAPI._exceptions.Buying.BuyExceptions import BuyingExpirationInvalid
 
 class WebSocketClient:
     def __init__(self, api, token):

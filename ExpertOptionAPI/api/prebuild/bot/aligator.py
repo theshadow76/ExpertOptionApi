@@ -1,5 +1,5 @@
 import numpy as np
-from expert import EoApi as ExpertAPI
+from ExpertOptionAPI.expert import EoApi as ExpertAPI
 import time
 
 class AlligatorIndicator:

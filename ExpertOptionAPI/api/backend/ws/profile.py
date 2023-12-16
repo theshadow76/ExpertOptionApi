@@ -1,5 +1,5 @@
-from api.backend.client import WebSocketClient
-from api.constants import REGION
+from ExpertOptionAPI.api.backend.client import WebSocketClient
+from ExpertOptionAPI.api.constants import REGION
 
 class ExpertProfile:
     def __init__(self, token: str):

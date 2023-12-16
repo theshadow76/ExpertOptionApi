@@ -1,6 +1,6 @@
 # Made by © Vigo Walker
 
-from api.backend.client import WebSocketClient
+from ExpertOptionAPI.api.backend.client import WebSocketClient
 import asyncio
 import logging
 from collections import defaultdict, OrderedDict
@@ -16,13 +16,13 @@ import urllib
 from websocket._exceptions import WebSocketConnectionClosedException
 import datetime
 
-from _exceptions.Buying.BuyExceptions import BuyingExpirationInvalid
+from ExpertOptionAPI._exceptions.Buying.BuyExceptions import BuyingExpirationInvalid
 
-from api.backend.ws.channels.ping import Ping
+from ExpertOptionAPI.api.backend.ws.channels.ping import Ping
 
 
-import api.global_values as global_value
-from api.constants import BasicData, Symbols
+import ExpertOptionAPI.api.global_values as global_value
+from ExpertOptionAPI.api.constants import BasicData, Symbols
 
 class EoApi:
     def __init__(self, token: str, server_region):
