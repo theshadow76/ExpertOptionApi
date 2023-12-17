@@ -77,6 +77,60 @@ class _AlligatorIndicator:
         
         return "hold"
 
+class _AssetAnalysis:
+    def __init__(self, data):
+        self.data = data['message']['candles']
+
+    def calculate_percentages(self):
+        percentages = []
+        for candle in self.data:
+            periods = candle['periods']
+            for period in periods:
+                open_price = period[1][0][0]
+                close_price = period[1][-1][3]
+                percentage_change = ((close_price - open_price) / open_price) * 100
+                percentages.append(percentage_change)
+        return percentages
+
+    def calculate_rsi(self, periods=14):
+            if len(self.data) < periods:
+                return None  # Not enough data to compute RSI
+
+            gains = []
+            losses = []
+            for i in range(1, periods + 1):
+                change = self.data[i]['close'] - self.data[i - 1]['close']
+                if change > 0:
+                    gains.append(change)
+                else:
+                    losses.append(abs(change))
+
+            average_gain = sum(gains) / periods
+            average_loss = sum(losses) / periods if losses else 0
+
+            if average_loss == 0:
+                return 100  # Prevent division by zero
+
+            rs = average_gain / average_loss
+            rsi = 100 - (100 / (1 + rs))
+
+            return rsi
+
+    def check_overbought_oversold(self, rsi_thresholds=(70, 30)):
+        overbought_threshold, oversold_threshold = rsi_thresholds
+        rsi = self.calculate_rsi()
+
+        if rsi is None:
+            return None  # Not enough data
+
+        if rsi > overbought_threshold:
+            return "Overbought"
+        elif rsi < oversold_threshold:
+            return "Oversold"
+        else:
+            return "Neutral"
+
+
 def AlligatorIndicatorTest(token, server_region):
     # << INIT ExpertAPI >>
     expert = ExpertAPI(token=token, server_region=server_region)
@@ -92,3 +146,24 @@ def AlligatorIndicatorTest(token, server_region):
         market_status = alligator.evaluate_market(expert)
         print(market_status)
         time.sleep(5)
+
+# Extract the close prices from the data
+def extract_close_prices(data):
+    close_prices = []
+    for candle in data['message']['candles']:
+        for period in candle['periods']:
+            close_price = period[1][-1][3]  # Extract the closing price from each period
+            close_prices.append({'close': close_price})
+    return close_prices
+
+def RelativeStrengthIndex(data):
+    # Initialize the class with your data
+    data_for_analysis = extract_close_prices(data)
+    analysis = _AssetAnalysis(data_for_analysis)
+
+    # Calculate the RSI
+    rsi_value = analysis.calculate_rsi()
+    # Check if the asset is overbought or oversold
+    overbought_oversold_status = analysis.check_overbought_oversold()
+
+    return {"RSI Value" : rsi_value, "Status" : overbought_oversold_status}
