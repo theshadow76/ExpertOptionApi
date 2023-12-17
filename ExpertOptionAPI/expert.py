@@ -25,7 +25,7 @@ import ExpertOptionAPI.api.global_values as global_value
 from ExpertOptionAPI.api.constants import BasicData, Symbols
 
 class EoApi:
-    def __init__(self, token: str, server_region):
+    def __init__(self, token: str, server_region = None, *args, **kwargs):
         self.token = token
         self.server_region = server_region
         self.utli = _Utils()
