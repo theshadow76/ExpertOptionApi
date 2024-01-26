@@ -65,8 +65,8 @@ class EoApi:
                                     msg=BasicData.SendData(self),
                                     ns="_common")
         return global_value.ProfileData
-    def GetCandles(self):
-        data =  {"action":"subscribeCandles","message":{"assets":[{"id":142,"timeframes":[0,5]}],"modes":["vanilla"]},"token":self.token,"ns":18}
+    def GetCandles(self, id):
+        data =  {"action":"subscribeCandles","message":{"assets":[{"id":id,"timeframes":[0,5]}],"modes":["vanilla"]},"token":self.token,"ns":18}
         global_value.is_GetCandles_timeFrames = True
         self.send_websocket_request(action="subscribeCandles", msg=data)
         return global_value.CandlesData
