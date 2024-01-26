@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='ExpertOptionAPI',
-    version='0.6',
+    version='0.8',
     packages=find_packages(where="./"),
     package_dir={'': "./"},
     long_description=long_description,
@@ -14,6 +14,8 @@ setup(
         # list your package dependencies here
         "websocket",
         "simplejson",
-        "pandas"
+        "pandas",
+        "pause",
+        "websocket_client"
     ],
 )
