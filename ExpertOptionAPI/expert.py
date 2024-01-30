@@ -161,7 +161,7 @@ class EoApi:
         self.send_websocket_request(action="assetHistoryCandles", msg=data)
         return global_value.SingleCandleData
     
-    def GetMultipleCandlesFromNow(self):
+    def GetMultipleCandlesFromNow(self, interval: int = 10):
         # Starting interval of 300 seconds
         base_interval = 120
 
@@ -169,8 +169,9 @@ class EoApi:
         desired_periods = []
 
         # Calculate the periods, incrementing the interval each time
-        for i in range(10):
-            if i < 9:  # For the first nine periods, add 127 seconds each time
+        for i in range(interval):
+            danger = interval - 1
+            if i < danger:  # For the first nine periods, add 127 seconds each time
                 round_interval = base_interval + i * 127
             else:  # For the last period, add 83 seconds instead
                 round_interval = base_interval + i * 127 + 87
