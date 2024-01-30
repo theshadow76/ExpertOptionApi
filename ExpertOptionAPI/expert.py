@@ -70,7 +70,7 @@ class EoApi:
         global_value.is_GetCandles_timeFrames = True
         self.send_websocket_request(action="subscribeCandles", msg=data)
         return global_value.CandlesData
-    def GetCandlesHistory(self, periods: int = time.time()):
+    def GetCandlesHistory(self, periods: int = time.time(), interval: int = 10):
         # Starting interval of 300 seconds
         base_interval = 300
 
@@ -78,7 +78,7 @@ class EoApi:
         desired_periods = []
 
         # Calculate the periods, incrementing the interval each time
-        for i in range(10):
+        for i in range(interval):
             if i < 9:  # For the first nine periods, add 127 seconds each time
                 round_interval = base_interval + i * 127
             else:  # For the last period, add 83 seconds instead
@@ -101,10 +101,9 @@ class EoApi:
             "token": self.token,  # Ensure this is the correct token
             "ns": 11
         }
-        print(data)
         global_value.is_GetassetHistoryCandles = True
         self.send_websocket_request(action="assetHistoryCandles", msg=data)
-        return global_value.assetHistoryCandles
+        return global_value.SingleCandleData
 
     def Buy(self, amount: int = 1, type: str = "call", assetid: int = 240, exptime: int = 60, isdemo: int = 1, strike_time: int = int(time.time())):
     # Your method implementation here
