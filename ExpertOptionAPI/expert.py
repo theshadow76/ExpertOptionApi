@@ -1,6 +1,6 @@
 # Made by © Vigo Walker
 
-from ExpertOptionAPI.api.backend.client import WebSocketClient
+from ExpertOptionAPI2.api.backend.client import WebSocketClient
 import asyncio
 import logging
 from collections import defaultdict, OrderedDict
@@ -16,13 +16,13 @@ import urllib
 from websocket._exceptions import WebSocketConnectionClosedException
 import datetime
 
-from ExpertOptionAPI._exceptions.Buying.BuyExceptions import BuyingExpirationInvalid
+from ExpertOptionAPI2._exceptions.Buying.BuyExceptions import BuyingExpirationInvalid
 
-from ExpertOptionAPI.api.backend.ws.channels.ping import Ping
+from ExpertOptionAPI2.api.backend.ws.channels.ping import Ping
 
 
-import ExpertOptionAPI.api.global_values as global_value
-from ExpertOptionAPI.api.constants import BasicData, Symbols
+import ExpertOptionAPI2.api.global_values as global_value
+from ExpertOptionAPI2.api.constants import BasicData, Symbols
 
 class EoApi:
     def __init__(self, token: str, server_region = None, *args, **kwargs):
@@ -96,7 +96,7 @@ class EoApi:
             "message": {
                 "assetid": 240,
                 "periods": desired_periods,
-                "timeframes": [0]  # Adjusted as per your requirement
+                "timeframes": [5]  # Adjusted as per your requirement
             },
             "token": self.token,  # Ensure this is the correct token
             "ns": 11
@@ -116,6 +116,20 @@ class EoApi:
             print(f"The exp_time is: {int(exptime_)}")
             try:
                 self.send_websocket_request(action="BuyOption", msg={"action":"buyOption","message":{"type":f"{type}","amount":amount,"assetid":assetid,"strike_time":strike_time,"expiration_time":int(exptime_),"is_demo":isdemo,"rateIndex":1},"token":f"{self.token}","ns":44})
+                pause.seconds(5)
+                if global_value.ErrorData == "ERROR_EXPIRATION_INVALID":
+                    self.send_websocket_request(action="BuyOption", msg={"action":"buyOption","message":{"type":f"{type}","amount":amount,"assetid":assetid,"strike_time":strike_time,"expiration_time":int(exptime_),"is_demo":isdemo,"rateIndex":1},"token":f"{self.token}","ns":44})
+                    global_value.ErrorData = None
+                    pause.seconds(5)
+                    if global_value.ErrorData == "ERROR_EXPIRATION_INVALID":
+                        attempts = 10
+                        for attempt in attempts:
+                            self.send_websocket_request(action="BuyOption", msg={"action":"buyOption","message":{"type":f"{type}","amount":amount,"assetid":assetid,"strike_time":strike_time,"expiration_time":int(exptime_),"is_demo":isdemo,"rateIndex":1},"token":f"{self.token}","ns":44})
+                            global_value.ErrorData = None
+                            pause.seconds(3)
+                            if global_value.ErrorData == None:
+                                return global_value.BuyData
+                
                 return global_value.BuyData
             except BuyingExpirationInvalid as e:
                 for i in range(15):
@@ -133,6 +147,14 @@ class EoApi:
             self.logger.info("Buying...")
             print("Buying...") # replace in prod
             self.send_websocket_request(action="BuyOption", msg=BasicData.BuyData(self=self, amount=amount, type=type, assetid=assetid, exptime=exptime, isdemo=isdemo, strike_time=strike_time), ns=300)
+            pause.seconds(5)
+            if global_value.ErrorData == "ERROR_EXPIRATION_INVALID":
+                try:
+                    self.send_websocket_request(action="BuyOption", msg=BasicData.BuyData(self=self, amount=amount, type=type, assetid=assetid, exptime=exptime, isdemo=isdemo, strike_time=strike_time), ns=300)
+                    global_value.ErrorData = None
+                except Exception as e:
+                    self.send_websocket_request(action="BuyOption", msg=BasicData.BuyData(self=self, amount=amount, type=type, assetid=assetid, exptime=exptime, isdemo=isdemo, strike_time=strike_time), ns=300)
+                    global_value.ErrorData = None
             return global_value.BuyData
     def SetDemo(self):
         data = {"action":"setContext","message":{"is_demo":1},"token": self.token,"ns":1}
