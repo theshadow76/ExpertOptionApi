@@ -1,6 +1,6 @@
 
 # ExpertOption API
-
+join the discord: [Discord](https://discord.gg/kaZ8uV9b6k)
 ## Overview
 
 The ExpertOption API offers a programmable interface to interact with Expert Option, a renowned platform for binary options trading. This unofficial API facilitates automated trading, data retrieval, and analysis, enhancing the trading experience.
